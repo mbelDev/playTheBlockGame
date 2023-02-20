@@ -11,6 +11,7 @@ public class GamePanel extends JPanel implements Runnable {
   public Thread th;
 
   private int score = 0;
+  private boolean isGame = true;
 
   public GamePanel() {
     System.out.println("Game Panel 생성자");
@@ -29,11 +30,11 @@ public class GamePanel extends JPanel implements Runnable {
       for (int j = 0; j < 10; j++) {
         blocks[i][j] = new Block();
         blocks[i][j].x = (60 + GAP) * j;
-        blocks[i][j].y = (30 + GAP) * i;
+        blocks[i][j].y = (30 + GAP) * i + 60;
         blocks[i][j].color = i;
-        if (j % 2 == 0) {
-          blocks[i][j].isHide = true;
-        }
+        // if (j % 2 == 0 && i % 3 == 0) {
+        //   blocks[i][j].isHide = true;
+        // }
       }
     }
 
@@ -49,6 +50,8 @@ public class GamePanel extends JPanel implements Runnable {
               paddle.isRight = true;
             } else if (keyCode == KeyEvent.VK_SPACE) {
               ball.shoot();
+            } else if (keyCode == KeyEvent.VK_R && !isGame) {
+              reStart();
             }
           }
 
@@ -66,56 +69,67 @@ public class GamePanel extends JPanel implements Runnable {
     // super.paintComponents(g);
     super.paintComponent(g);
     g.setColor(Color.WHITE);
-    g.fillRect(paddle.x, paddle.y, paddle.width, paddle.height);
-    g.fillOval(ball.x, ball.y, ball.width, ball.height);
-    // g.setColor(Color.RED);
-    // g.drawRect(paddle.x, paddle.y, paddle.width, paddle.height);
-    // g.drawOval(ball.x, ball.y, ball.width, ball.height);
-    g.setFont(new Font("Arial", Font.PLAIN, 20));
-    g.drawString(Integer.toString(score), 500, 850);
-    for (int i = 0; i < 5; i++) {
-      for (int j = 0; j < 10; j++) {
-        if (blocks[i][j].color == 0) {
-          g.setColor(Color.BLUE);
-        } else if (blocks[i][j].color == 1) {
-          g.setColor(Color.GREEN);
-        } else if (blocks[i][j].color == 2) {
-          g.setColor(Color.MAGENTA);
-        } else if (blocks[i][j].color == 3) {
-          g.setColor(Color.YELLOW);
-        } else if (blocks[i][j].color == 4) {
-          g.setColor(Color.ORANGE);
-        }
-        if (!blocks[i][j].isHide) {
-          g.fillRect(
-            blocks[i][j].x,
-            blocks[i][j].y,
-            blocks[i][j].width,
-            blocks[i][j].height
-          );
+    if (ball.respawn <= 180) {
+      g.fillRect(paddle.x, paddle.y, paddle.width, paddle.height);
+      g.fillOval(ball.x, ball.y, ball.width, ball.height);
+      // g.setColor(Color.RED);
+      // g.drawRect(paddle.x, paddle.y, paddle.width, paddle.height);
+      // g.drawOval(ball.x, ball.y, ball.width, ball.height);
+      g.setFont(new Font("Arial", Font.PLAIN, 20));
+      g.drawString(Integer.toString(score), 500, 850);
+      for (int i = 0; i < 5; i++) {
+        for (int j = 0; j < 10; j++) {
+          if (blocks[i][j].color == 0) {
+            g.setColor(Color.BLUE);
+          } else if (blocks[i][j].color == 1) {
+            g.setColor(Color.GREEN);
+          } else if (blocks[i][j].color == 2) {
+            g.setColor(Color.MAGENTA);
+          } else if (blocks[i][j].color == 3) {
+            g.setColor(Color.YELLOW);
+          } else if (blocks[i][j].color == 4) {
+            g.setColor(Color.ORANGE);
+          }
+          if (!blocks[i][j].isHide) {
+            g.fillRect(
+              blocks[i][j].x,
+              blocks[i][j].y,
+              blocks[i][j].width,
+              blocks[i][j].height
+            );
+          }
         }
       }
-    }
-    if (ball.combo > 0) {
-      g.setFont(new Font("Arial", Font.PLAIN, 24));
-      g.drawString(Integer.toString(ball.combo) + "COMBO", 500, 450);
-    }
-    for (int i = 0; i < ball.life; i++) {
-      g.setColor(Color.WHITE);
-      g.fillOval(30 + (i * 20 + 20), 850, 10, 10);
-    }
+      if (ball.combo > 0) {
+        g.setFont(new Font("Arial", Font.PLAIN, 24));
+        g.drawString(Integer.toString(ball.combo) + "COMBO", 500, 450);
+      }
+      for (int i = 0; i < ball.life; i++) {
+        g.setColor(Color.WHITE);
+        g.fillOval(30 + (i * 20 + 20), 850, 10, 10);
+      }
 
-    if (!ball.moving) {
-      g.setColor(Color.WHITE);
-      g.setFont(new Font("Arial", Font.BOLD, 32));
-      g.drawString("READY", 250, 400);
-      g.setFont(new Font("Arial", Font.BOLD, 18));
-      g.drawString("Press Space to Start", 220, 480);
+      if (!ball.moving) {
+        g.setColor(Color.WHITE);
+        g.setFont(new Font("Arial", Font.BOLD, 32));
+        g.drawString("READY", 250, 400);
+        g.setFont(new Font("Arial", Font.BOLD, 18));
+        g.drawString("Press Space to Start", 220, 480);
+      }
+    } else {
+      g.setFont(new Font("Arial", Font.PLAIN, 20));
+      g.drawString(
+        "Your Last Score is " + score,
+        210 - Integer.toString(score).length() * 2,
+        450
+      );
+      g.drawString("Press R Key to restart", 220, 480);
     }
     if (ball.life < 0) {
       g.setColor(Color.RED);
       g.setFont(new Font("Arial", Font.BOLD, 32));
       g.drawString("GAME OVER", 220, 400);
+      isGame = false;
     }
   }
 
@@ -213,5 +227,22 @@ public class GamePanel extends JPanel implements Runnable {
 
   public boolean hitObject(Rectangle ball, Rectangle rect) {
     return ball.intersects(rect);
+  }
+
+  public void reStart() {
+    ball = new Ball();
+    paddle = new Paddle();
+    blocks = new Block[5][10];
+    for (int i = 0; i < 5; i++) {
+      for (int j = 0; j < 10; j++) {
+        blocks[i][j] = new Block();
+        blocks[i][j].x = (60 + GAP) * j;
+        blocks[i][j].y = (30 + GAP) * i + 60;
+        blocks[i][j].color = i;
+        // if (j % 2 == 0 && i % 3 == 0) {
+        //   blocks[i][j].isHide = true;
+        // }
+      }
+    }
   }
 }

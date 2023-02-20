@@ -4,13 +4,14 @@ public class Ball {
   public int width, height, speedX, speedY, life;
   public boolean moving = false;
   public int combo = 0;
+  public boolean isCombo = false;
 
-  private int respawn = 0;
+  public int respawn = 0;
 
   public Ball() {
     x = 0;
     y = 0;
-    life = 2;
+    life = 0;
     width = 10;
     height = 10;
     speedX = 0;
@@ -32,22 +33,23 @@ public class Ball {
 
       if (x < 0 || x > 608) {
         speedX = -speedX;
+        x = x < 0 ? x = 0 : x > 608 ? x = 608 : 608;
       }
       if (y < 0) {
         speedY = -speedY;
       }
       if (y > 900) {
-        if (life >= 0) {
+        if (respawn <= 180) {
           respawn++;
-          if (respawn > 90) {
-            life--;
-            respawn = 0;
+        }
+        if (respawn > 90) {
+          life--;
+          if (life >= 0) {
             combo = 0;
-            if (life >= 0) {
-              moving = false;
-              x = _paddle.x + 35;
-              y = _paddle.y - 10;
-            }
+            respawn = 0;
+            moving = false;
+            x = _paddle.x + 35;
+            y = _paddle.y - 10;
           }
         }
       }
@@ -59,7 +61,11 @@ public class Ball {
         (y < _paddle.y + _paddle.height)
       ) {
         //충돌했다
-        combo = 0;
+        if (!isCombo) {
+          combo = 0;
+        } else {
+          isCombo = false;
+        }
         int checkX = speedX > 0 ? 1 : -1;
         int checkY = speedY > 0 ? 1 : -1;
         while (
@@ -173,6 +179,7 @@ public class Ball {
           item.isHide = true;
           score += 1000 + (100 * combo * combo);
           combo++;
+          isCombo = true;
           break; //동시에 여러개 블록에 판정 일어나지않게 멈춰줌
         }
       }

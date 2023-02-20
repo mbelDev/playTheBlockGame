@@ -9,8 +9,6 @@ public class Paddle {
     height = 20;
     spd = 5;
     x = 200;
-    y = 700;
+    y = 800;
   }
-
-  private void inputBall() {}
 }
